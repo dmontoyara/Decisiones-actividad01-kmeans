@@ -1,5 +1,10 @@
 # Decisiones-actividad01-kmeans
 
+Jessica María Rivera Jiménez
+1017205993
+Luis Felipe Arévalo Cortés
+1018469500
+Davinson Montoya Ramirez
 
 # Planteamiento del problema
 
