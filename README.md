@@ -31,7 +31,7 @@ Los valores que se obtienen de los centroides no parecen cambiar entre sí a par
 
 Los valores cambiantes de los centroides responden a comportamientos dados por datos con valores extremos en ambas direcciones. con valores de varianza iguales para todas las distribuciones, la posición de los centroides no cambia.
 
-Bibliografía
+# Bibliografía
 Geeksforgeeks. (2021). Elbow Method for optimal value of k in KMeans. https://www.geeksforgeeks.org/elbow-method-for-optimal-value-of-k-in-kmeans/
 MamutCola. (n.d.). Introducción a las técnicas multivariantes de clasificación. http://ares.inf.um.es/00Rteam/pub/mamutCola/modulo6.html
 RPUBS. (2019). Matrices, Vectores y Escalares. https://rpubs.com/cete/fundamentosr3
