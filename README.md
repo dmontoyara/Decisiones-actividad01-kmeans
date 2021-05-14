@@ -3,7 +3,9 @@
 
 # Planteamiento del problema
 
+El propósito central del experimento es analizar un agrupamiento de datos cuando existe un solapamiento entre ellos. Es decir, los datos a simple vista no son fácilmente clasificables con un modelo matemático. Las limitaciones de los modelos matemáticos habituales para clasificar, ponen en marcha alternativas que discriminan de forma aproximada y con buenos resultados en la práctica.
 
+Otra problemática es la presencia de la correlación en el agrupamiento de datos. Al ingresar variables adicionales que dependen de otras que se encuentran previamente en el modelo, se tiene la hipótesis que los centroides de agrupamiento puedan verse afectados y no se estabilice correctamente. Con la inicialización aleatoria del método, es importante controlar la semilla o la cantidad de iteraciones con las que empieza a generar el agrupamiento.
 
 
 # Descripción de la metodología
