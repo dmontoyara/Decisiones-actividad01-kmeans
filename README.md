@@ -1,5 +1,13 @@
 # Decisiones-actividad01-kmeans
 
+
+La metodología implementada en la solución de la actividad fue Kmeans, esta técnica es una algoritmo de clasificación no supervisada o clustering que usa la distancia de las observaciones a un centroide definido para determinar su pertenencia al grupo dado por dicho centroide, la definición de la cantidad de grupos (definición del parámetro k) a encontrar por el algoritmo, se realiza previamente a la inicialización de kmeans, una de las técnicas para definir esta cantidad de grupos es la gráfica de codo o en ingles Elbow method. Los pasos usados por kmeans son:
+
+        * Selección de k centroides (esta selección se realiza de manera aleatoria).
+        * Asignación de las observaciones al centroide más cercano (usa distancia cuadrática).
+        * Actualización de los centroides, una vez clasificado cada observación se promedian los valores de cada grupo formado y dicho promedio se convierte en el nuevo centroide.
+
+
 # Resultados del Experimento:
 
 Punto 1:
@@ -26,3 +34,5 @@ stat.ethz. (n.d.). Correlation, Variance and Covariance (Matrices). https://stat
 UNIOVIEDO. (n.d.). El algoritmo k-means aplicado a clasificación y procesamiento de imágenes. https://www.unioviedo.es/compnum/laboratorios_py/kmeans/kmeans.html
 Wikipedia. (n.d.). Matriz de covarianza. https://es.wikipedia.org/wiki/Matriz_de_covarianza
 (UNIOVIEDO, n.d.)(Geeksforgeeks, 2021)
+El algoritmo k-means aplicado a clasificación y procesamiento de imágenes https://www.unioviedo.es/compnum/laboratorios_py/kmeans/kmeans.html
+Elbow Method for optimal value of k in KMeans https://www.geeksforgeeks.org/elbow-method-for-optimal-value-of-k-in-kmeans/
