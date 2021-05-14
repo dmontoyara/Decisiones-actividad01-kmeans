@@ -1,6 +1,13 @@
 # Decisiones-actividad01-kmeans
 
 
+# Planteamiento del problema
+
+
+
+
+# Descripción de la metodología
+
 La metodología implementada en la solución de la actividad fue Kmeans, esta técnica es una algoritmo de clasificación no supervisada o clustering que usa la distancia de las observaciones a un centroide definido para determinar su pertenencia al grupo dado por dicho centroide, la definición de la cantidad de grupos (definición del parámetro k) a encontrar por el algoritmo, se realiza previamente a la inicialización de kmeans, una de las técnicas para definir esta cantidad de grupos es la gráfica de codo o en ingles Elbow method. Los pasos usados por kmeans son:
 
         * Selección de k centroides (esta selección se realiza de manera aleatoria).
