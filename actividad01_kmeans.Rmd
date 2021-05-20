@@ -1,170 +1,270 @@
 ---
 title: "Análisis de la estabilidad de los centroides en K-Medias en presencia de correlación"
-author: "Juan David Ospina Arango <br/> Universidad Nacional de Colombia - Sede Medellín <br/> Departamento de Ciencias de la Computación y de la Decisión <br/> Decisiones bajo incertidumbre (Optimización para aprendizaje de máquina)"
+author: "Davinson Montoya Ramirez <br/> Jessica Maria Rivera Jimenez <br/> Luis Felipe Arevalo Cortes <br/>  Universidad Nacional de Colombia - Sede Medellín <br/> Decisiones bajo incertidumbre (Optimización para aprendizaje de máquina)"
 date: "Semestre 2021-01"
 output:
   html_document: default
   pdf_document: default
 ---
 
+
+### Objetivo de la Actividad
+Como objetivo, la actividad plantea el uso del algoritmo kmeans para evidenciar como a medida que la correlación se hace presente dentro de las variables a agrupar, la variabilidad de los centroides aumenta.
+
+---
+
+### Metodología Realizada
+La metodología implementada en la solución de la actividad fue Kmeans, esta técnica es una algoritmo de clasificación no supervisada o clustering que usa la distancia de las observaciones a un centroide definido para determinar su pertenencia al grupo dado por dicho centroide, la definición de la cantidad de grupos (definición del parámetro k) a encontrar por el algoritmo, se realiza previamente a la inicialización de kmeans, una de las técnicas para definir esta cantidad de grupos es la gráfica de codo o en ingles Elbow method. Los pasos usados por kmeans son:
+1. Selección de k centroides (esta selección se realiza de manera aleatoria).
+2. Asignación de las observaciones al centroide más cercano (usa distancia cuadrática).
+3. Actualización de los centroides, una vez clasificado cada observación se promedian los valores de cada grupo formado y dicho promedio se convierte en el nuevo centroide.
+
+
+
+Se utilizarán las siguientes librerías para el correcto desarrollo de los ejercicios:
+
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = FALSE, cache = TRUE)
+knitr::opts_chunk$set(echo = TRUE, cache = TRUE)
 library(mvtnorm)
 library(MBESS)
 library(Matrix)
 library(factoextra)
 ```
 
-### El algoritmo de K-Means
+## Distribución Normal Bivariada
 
-El algoritmo de [K-Means](https://en.wikipedia.org/wiki/K-means_clustering) es una técnica popular de aprendizaje no supervisado para agrupar observaciones. 
+La distribución normal bivariada es definida por un vector de medias y la matriz de varianzas-covarianzas. La distribución normal multivariada es una extensión de la distribución normal univariada para aplicaciones con un grupo de variables que pueden estar correlacionadas.
 
-Uno de los retos en la aplicación de los métodos de aprendizaje de máquinas es el manejo de información redundante. Se considera que la información es redundante cuando a partir de unas variables se pueden inferir las otras.
+Inicialmente, se quieren modelar diferentes distribuciones que sean independientes y que tengan traslape entre ellas, contenidas en dos variables x1(Eje x) y x2(Eje y). Para 3 distribuciones se definen los siguientes tamaños de muestra:
+```{r}
+knitr::opts_chunk$set(echo = TRUE, cache = TRUE)
 
-Un ejemplo de redundancia es la correlación alta entre variables. Si dos variables están altamente correlacionadas, conocer lo que pasa con una permite saber lo que pasa con la otra. Este problema también se conoce como colinealidad. 
+n1<-130 # Tamaño de la muestra de la clase 1
+n2<-110 # Tamaño de la muestra de la clase 2
+n3<-100 # Tamaño de la muestra de la clase 3
 
-Por otro lado, la estabilidad de un método de aprendizaje de máquina se puede entender de diferentes maneras. Cambios pequeños en el conjunto de entrenamiento no producen cambios significativos en:
-* a) en los parámetros estimados del modelo (estabilidad en los parámetros) o 
-* b) en las salidas del modelo (cambio en las predicciones del modelo)
+```
 
-Uno de los retos de la redundancia es que puede afectar la estabilidad de los métodos de aprendizaje de máquina. En particular, en K-Medias la estabilidad se puede establecer como la variabilidad de los centroides finales cada vez que se cambian los centroides iniciales. Cuando cambiar los centroides iniciales no modifica los centroides finales, se puede considerar que el método tiene un comportamiento estable respecto a la inicialización.
-
-
-### Objetivo
-Entender cómo la correlación entre las variables numéricas puede afectar la estabilidad de los centroides en el algoritmo de K-Medias utilizando escenarios de simulación.
-
-### Retos de aprendizaje
-* Planteamiento de estudios de simulación
-* Refuerzo de los conceptos estadísticos de media, varianza, covarianza y correlación, distribución normal multivariada
-* Refuerzo del algoritmo de K-Medias
-
-
-### Metodología
-Se deberá desarrollar un experimento de simulación para analizar la estabilidad del algoritmo de K-Means. Para ello se proponen los siguientes pasos.
-
-1. Simular tres grupos de distribuciones normales bivariadas independientes pero con traslape. Es decir que los miembros de cada grupo son $X\sim N_2(\mu_j,\Sigma_j)$, $j=1,2,3$. A continuación se presenta un ejemplo de dos grupos generados a partir de distribuciones normales bivariadas:
+Los vectores de medias en cada conjunto se muestran a continuación:
 
 ```{r}
-M_cor<-matrix(c(1,0.6,0.6,1),ncol=2)
+knitr::opts_chunk$set(echo = TRUE, cache = TRUE)
+mu3<-c(0.7,2.2) # Vector de medias de la clase 1
+mu4<-c(-0.2,1.7) # Vector de medias de la clase 2
+mu5<-c(-1.6,1) # Vector de medias de la clase 3
+```
 
-M_cov<-cor2cov(M_cor,sd=c(1,1))
+### La correlación entre variables
+La correlación de Pearson mide el grado de relación lineal entre dos variables, estos valores pueden ir entre -1 y 1, la matriz de correlación muestra estos valores.
 
+```{r}
+knitr::opts_chunk$set(echo = TRUE, cache = TRUE)
+M_cor<-matrix(c(1,0.4,0.4,1),ncol=2)
+```
+### Matriz de Covarianza
+la matriz de covarianza muestra esta relacion para cada par de variables. A partir de la matriz de correlación definida, se ajusta la matriz de covarianza, y además un vector para la desviación estándar de nuestra matriz. Luego, se busca la matriz positiva más cercana por medio de la función nearPD
+```{r}
+knitr::opts_chunk$set(echo = TRUE, cache = TRUE)
+M_cov<-cor2cov(M_cor,sd=c(0.7,0.7))
 M_cov_pd<-as.matrix(nearPD(M_cov)$mat)
-n1<-50 # Tamaño de la muestra de la clase 1
-n2<-80 # Tamaño de la muestra de la clase 2
-n3<-100 # Tamaño de la muestra de la clase 3
-mu3<-c(0.5,1.5) # Vector de medias de la clase 1
-mu4<-c(-1,1.5) # Vector de medias de la clase 2
-mu5<-c(-0.8,1) # Vector de medias de la clase 3
-set.seed(1)
+```
+### Definición de las Distribuciones
+Con el fin de lograr la replicabilidad en los datos, se define una semilla de tamaño 100 y se generan las distribuciones utilizando la función rmvnorm, donde recoge el tamaño de muestra, la matriz de covarianza ajustada y el método "eigen" para descomponer la matriz en una forma estándar
+```{r}
+knitr::opts_chunk$set(echo = TRUE, cache = TRUE)
+set.seed(100)
 muestra3<-rmvnorm(n=n1,mean=mu3,sigma=M_cov_pd,method="eigen")
 muestra4<-rmvnorm(n=n2,mean=mu4,sigma=M_cov_pd,method="eigen")
 muestra5<-rmvnorm(n=n3,mean=mu5,sigma=M_cov_pd,method="eigen")
-muestra_nosep<-rbind(muestra3,muestra4,muestra5)
-clase<-c(rep(-1,n1),rep(1,n2),rep(3,n3))
-muestra_nosep_df<-data.frame(muestra_nosep,clase)
-
-plot(muestra_nosep,
-     col=(clase+2),
-     pch=(clase+2),
-     ylim=c(-2,6),xlim=c(-6,6),
-     xaxt="n",yaxt="n",
-     xlab=expression(x[1]),
-     ylab=expression(x[2]),
-     main="Ejemplo de dos grupos que se traslapan",
-     las=1,cex=1.5,lwd=2)
-grid()
-legend("topleft",legend=c("Grupo 1", "Grupo 2", "Grupo 3"),
-       pch=c(1,3,5),col=c(1,3,5),
-       pt.lwd=2,pt.cex=1.8,bty="n")
 ```
 
-2. Encontrar los centroides con K-Means fijando el método de inicialización de los centroides. Encuentre los centroides para $n_c$ inicializaciones aleatorias.
+### Graficando las distribuciones simuladas
+
+Por medio del método rbind, se unen las 3 muestras y se agrupan como un dataframe para graficar. En "clase" se definen los colores que va a tener cada conjunto para diferenciarse entre sí. En la gráfica se agrega el dataframe creado, se ajustan bordes, colores, título, cuadrícula y leyenda, donde se muestra a continuación:
+
 ```{r}
-n_c=sample(1:100,replace=F)
-#set.seed(1)
-k1 <- kmeans(muestra_nosep_df, 3, nstart = sample(1:100,size = 1))
-k2 <- kmeans(muestra_nosep_df, 3, nstart = sample(1:100,size = 1))
-k3 <- kmeans(muestra_nosep_df, 3, nstart = sample(1:100,size = 1))
-k4 <- kmeans(muestra_nosep_df, 3, nstart = sample(1:100,size = 1))
-#print(k1$centers)
-cent <- list(k1 = k1$centers,k2 = k2$centers,k3 = k3$centers,k4 = k4$centers)
+knitr::opts_chunk$set(echo = TRUE, cache = TRUE)
+muestra_nosep<-rbind(muestra3,muestra4,muestra5)
+clase<-c(rep(-1,n1),rep(1,n2),rep(3,n3))
+muestra_nosep_df<-data.frame(muestra_nosep)
+ggplot() + geom_point(aes(x = X1, y = X2, color = clase), data = muestra_nosep_df, size = 2) +
+  scale_colour_gradientn(colours=rainbow(4)) +
+ggtitle('Distribución de las 3 clases') + 
+  xlab('X1') + ylab('X2')
+
+
+```
+## Utilizando el método k-means
+
+Se utilizará el método de k-means para establecer en 3 grupos todo el conjunto de datos. Se definen 100 inicializaciones aleatorias para el método, y se calculan sus centroides.
+
+```{r}
+knitr::opts_chunk$set(echo = TRUE, cache = TRUE)
+n_c=100
+k1 <- kmeans(muestra_nosep_df, 3, nstart = n_c)
+cent <- k1$centers
 print(cent)
-p1 <- fviz_cluster(k1, geom = "point", data = muestra_nosep_df) + ggtitle("k = 3")
-p2 <- fviz_cluster(k2, geom = "point", data = muestra_nosep_df) + ggtitle("k = 3")
-p3 <- fviz_cluster(k3, geom = "point", data = muestra_nosep_df) + ggtitle("k = 3")
-p4 <- fviz_cluster(k4, geom = "point", data = muestra_nosep_df) + ggtitle("k = 3")
-library(gridExtra)
-grid.arrange(p1, p2, p3, p4, nrow = 2)
-#fviz_cluster(km.res, data = muestra_nosep_df)
+```
+## Visualización de los centroides con los conjuntos de datos agrupados
+
+Con la información del conjunto de datos agrupado en 3 clusters, se procede a mostrar gráficamente los resultados, resaltando los centroides en cada grupo.
+```{r}
+knitr::opts_chunk$set(echo = TRUE, cache = TRUE)
+ggplot() + geom_point(aes(x = X1, y = X2, color = k1$cluster), data = muestra_nosep_df, size = 2) + scale_colour_gradientn(colours=rainbow(4)) + geom_point(aes(x = k1$centers[,1], y = k1$centers[,2]), color = "black", size = 4) + ggtitle("Clusters con k = 3") + xlab("X1") + ylab("X2")
 ```
 
 3. Suponga que el $i$-ésimo individuo es de la forma $X_i = [x_1^i \quad x_2^i]^T$. Cree la variable $x_3$ como $x_3^i=x_1^i+\epsilon_i$ con $\epsilon_i$ iid de media cero y varianza constante. ¿Cuál es la varianza de $x_3$? ¿Cuál es la covarianza entre $x_1$ y $x_3$? ¿Al agregar esta variable K-Means sigue detectando correctamente los centroides? ¿Qué pasa con la estabilidad de los centroides cuando la varianza de $\epsilon$ aumenta?
+
+## Agregando una variable adicional correlacionada
+
+Se crea $x_3$ como la suma de $x_1$ y $\epsilon$
 ```{r}
-e<-rmvnorm(n=n1,mean=c(0,0),sigma=M_cov_pd,method="eigen")
-x3 <- muestra3 + e
+knitr::opts_chunk$set(echo = TRUE, cache = TRUE)
+e<-rnorm(n=340,mean=0, sd = 3)
+x3 <- muestra_nosep_df$X1 + e
+```
+
+Se calcula la varianza de $x_3$
+
+```{r}
+knitr::opts_chunk$set(echo = TRUE, cache = TRUE)
 var(x3, y = NULL, na.rm = FALSE)
-cov(muestra3, y = x3, use = "everything",
+```
+Covarianza entre $x_3$ y $x_1$
+```{r}
+knitr::opts_chunk$set(echo = TRUE, cache = TRUE)
+print('Covarianza entre X3 y X1')
+cov(muestra_nosep_df$X1, y = x3, use = "everything",
     method = c("pearson", "kendall", "spearman"))
-muestra_p3<-rbind(muestra3,muestra4,muestra5,x3)
-clasep3<-c(rep(-1,n1),rep(1,n2),rep(3,n3),rep(5,n1))
-muestra_p3_df<-data.frame(muestra_p3,clasep3)
-p3k1 <- kmeans(muestra_p3_df, 4, nstart = sample(1:100,size = 1))
-p3k2 <- kmeans(muestra_p3_df, 4, nstart = sample(1:100,size = 1))
-p3k3 <- kmeans(muestra_p3_df, 4, nstart = sample(1:100,size = 1))
-p3k4 <- kmeans(muestra_p3_df, 4, nstart = sample(1:100,size = 1))
-#print(k1$centers)
-cent <- list(k1 = p3k1$centers,k2 = p3k2$centers,k3 = p3k3$centers,k4 = p3k4$centers)
-print(cent)
-p13 <- fviz_cluster(p3k1, geom = "point", data = as.data.frame(muestra_p3)) + ggtitle("k = 4")
-p23 <- fviz_cluster(p3k2, geom = "point", data = as.data.frame(muestra_p3)) + ggtitle("k = 4")
-p33 <- fviz_cluster(p3k3, geom = "point", data = as.data.frame(muestra_p3)) + ggtitle("k = 4")
-p43 <- fviz_cluster(p3k4, geom = "point", data = as.data.frame(muestra_p3)) + ggtitle("k = 4")
-library(gridExtra)
-grid.arrange(p13, p23, p33, p43, nrow = 2)
+```
+Realizando el método k-means con la nueva variable $x_3$. Se observan los centroides para cada una de las variables.
+```{r}
+muestra_p3<-cbind(muestra_nosep_df$X1,muestra_nosep_df$X2,x3)
+muestra_p3_df<-data.frame(muestra_p3)
+col_headings <- c('X1','X2','X3')
+names(muestra_p3_df) <- col_headings
+n_c=100
+p3k1 <- kmeans(muestra_p3_df, 3, nstart = n_c)
+cent1 <- p3k1$centers
+print(cent1)
+```
+## ¿Qué pasa si aumenta la varianza?
+Se añadirá mayor varianza al conjunto de $\epsilon$ y veremos como se comporta
+```{r}
+knitr::opts_chunk$set(echo = TRUE, cache = TRUE)
+lista_centroides = data.frame()
+for(i in 5:8){
+e<-rnorm(n=340,mean=0, sd = i)
+x3 <- muestra_nosep_df$X1 + e
+muestra_p3<-cbind(muestra_nosep_df$X1,muestra_nosep_df$X2,x3)
+muestra_p3_df<-data.frame(muestra_p3)
+col_headings <- c('X1','X2','X3')
+names(muestra_p3_df) <- col_headings
+n_c=100
+p3k1 <- kmeans(muestra_p3_df, 3, nstart = n_c)
+cent1 <- p3k1$centers
+clus1 <- p3k1$cluster
+df <- data.frame(cent1)
+lista_centroides <- rbind(lista_centroides, df)
+}
+
+
+print(lista_centroides)
+ggplot(aes(x = X1, y = X2), data = lista_centroides, size = 2) + geom_point() + ggtitle("Clusters con k = 3") + xlab("X1") + ylab("X2")
+
+```
+A medida que la varianza aumenta, los centroides se van dispersando cada vez más entre sí
+
+
+## Agregando 3 variables adicionales
+Se definen 3 varaibles correlacionadas con las variables anteriormente declaradas
+
+```{r}
+knitr::opts_chunk$set(echo = TRUE, cache = TRUE)
+e4<-rnorm(n=340,mean=0, sd = 3)
+x4 <- muestra_p3_df$X2 + e4
+
+e6<-rnorm(n=340,mean=0, sd = 2)
+x6 <- muestra_p3_df$X2 + e6
+
+e5<-rnorm(n=340,mean=0, sd = 4)
+x5 <- muestra_p3_df$X3 + e5
 
 ```
 
-4. Como en el paso anterior, cree las variables $x_4$ y $x_6$ como la suma de $x_2$ y otra variable de media cero y varianza constante y la variable $x_5$ como la suma de $x_3$ y otra variable de media cero y varianza constante. ¿Al agregar estas variables, K-Means sigue detectando correctamente los centroides? ¿Qué pasa cuando la estabilidad de los centroides cuando la varianza de las variables que se suman a las variables originales aumenta?
+Se realiza el k-means para este nuevo conjunto y se observa lo siguiente:
 ```{r}
-e4<-rmvnorm(n=80,mean=c(0,0),sigma=M_cov_pd,method="eigen")
-x4 <- muestra4 + e4
-e6<-rmvnorm(n=80,mean=c(0,0),sigma=M_cov_pd,method="eigen")
-x6 <- muestra4 + e6
-e5<-rmvnorm(n=50,mean=c(0,0),sigma=M_cov_pd,method="eigen")
+knitr::opts_chunk$set(echo = TRUE, cache = TRUE)
+muestra_p4<-cbind(muestra_p3_df$X1, muestra_p3_df$X2, muestra_p3_df$X3, x4, x5, x6)
+muestra_p4_df<-data.frame(muestra_p4)
+col_headings <- c('X1','X2','X3','X4','X5','X6')
+names(muestra_p4_df) <- col_headings
+n_c=100
+p4k1 <- kmeans(muestra_p4_df, 3, nstart = n_c)
+cent2 <- p4k1$centers
+print(cent2)
+
+```
+## Que pasa si aumenta la varianza con estas 3 nuevas variables?
+
+Como era de esperarse, al aumentar la varianza, también aumenta la inestabilidad de los centroides en cada iteración, en total se incrementó la varianza 4 veces desde una desviación estándar de 5 hasta una desviación estándar de 8.
+
+```{r}
+knitr::opts_chunk$set(echo = TRUE, cache = TRUE)
+lista_centroides2 = data.frame()
+for(i in 5:8){
+e<-rnorm(n=340,mean=0, sd = i)
+x3 <- muestra_nosep_df$X1 + e
+
+e4<-rnorm(n=340,mean=0, sd = i)
+x4 <- muestra_nosep_df$X2 + e4
+
+e6<-rnorm(n=340,mean=0, sd = i)
+x6 <- muestra_nosep_df$X2 + e6
+
+e5<-rnorm(n=340,mean=0, sd = i)
 x5 <- x3 + e5
 
-muestra_pt<-rbind(muestra3,muestra4,muestra5,x3,x4,x5,x6)
-clasept<-c(rep(-1,n1),rep(1,n2),rep(3,n3),rep(5,50),rep(7,80),rep(9,80),rep(11,50))
-muestra_pt_df<-data.frame(muestra_pt,clasept)
-ptk1 <- kmeans(muestra_pt_df, 7, nstart = sample(1:100,size = 1))
-ptk2 <- kmeans(muestra_pt_df, 7, nstart = sample(1:100,size = 1))
-ptk3 <- kmeans(muestra_pt_df, 7, nstart = sample(1:100,size = 1))
-ptk4 <- kmeans(muestra_pt_df, 7, nstart = sample(1:100,size = 1))
-#print(k1$centers)
-cent <- list(k1 = ptk1$centers,k2 = ptk2$centers,k3 = ptk3$centers,k4 = ptk4$centers)
-print(cent)
-p1t <- fviz_cluster(ptk1, geom = "point", data = as.data.frame(muestra_pt)) + ggtitle("k = 7")
-p2t <- fviz_cluster(ptk2, geom = "point", data = as.data.frame(muestra_pt)) + ggtitle("k = 7")
-p3t <- fviz_cluster(ptk3, geom = "point", data = as.data.frame(muestra_pt)) + ggtitle("k = 7")
-p4t <- fviz_cluster(ptk4, geom = "point", data = as.data.frame(muestra_pt)) + ggtitle("k = 7")
-library(gridExtra)
-grid.arrange(p1t, p2t, p3t, p4t, nrow = 2)
+
+muestra_p4<-cbind(muestra_nosep_df$X1, muestra_nosep_df$X2, x3, x4, x5, x6)
+muestra_p4_df<-data.frame(muestra_p4)
+col_headings <- c('X1','X2','X3','X4','X5','X6')
+names(muestra_p4_df) <- col_headings
+n_c=100
+p4k1 <- kmeans(muestra_p4_df, 3, nstart = n_c)
+cent2 <- p4k1$centers
+clus2 <- p4k1$cluster
+df2 <- data.frame(cent2)
+lista_centroides2 <- rbind(lista_centroides2, df2)
+}
+
+print(lista_centroides2)
+ggplot(aes(x = X1, y = X2), data = lista_centroides2, size = 2) + geom_point() + ggtitle("Clusters con k = 3") + xlab("X1") + ylab("X2")
+
 ```
 
-5. A partir de estos experimentos, ¿qué se podría decir del efecto de la correlación entre variables y la estabilidad de los centroides en K-Medias?
+## Conclusiones y Análisis de los resultados
 
-## Por la existencia de la correlación y covarianza entre las variables de las distribuciones, el k-means no logra diferenciar correctamente los grupos. Además, con el ingreso de las últimas variables, se evidencian valores lejanos que halan los centrodies de los clusters en dicha dirección, afectando su diferenciación.
+Cuando encontramos que las variables que se deben agrupar están correlacionadas y los resultados de kmeans están viéndose afectados, lo más recomendable es utilizar algún método de reducción de dimensionalidad que nos permita seleccionar las variables más adecuadas para la agrupación, el análisis de componentes principales es uno de los recomendados ya que permite simplificar la información de varias variables en pocos componentes.
+Además es pertinente antes de realizar un agrupamiento por kmeans realizar un análisis de la dispersión de las variables involucradas para encontrar datos atípicos que afecten también los resultados de kmeans. Se observó que los centroides se alejaban más entre sí a medida que se agregaban variables y a medida que la varianza de unas variables correlacionadas tambien aumentaba.
 
 
-### Equipos y fecha de entrega
-1. El trabajo se realizará en equipos de tres a cinco estudiantes.
-2. El código generado para el estudio se debe publicar en GitHub.
-3. El reporte se debe publicar como una entrada de blog (por ejemplo en GitHub o [Rpubs](https://rpubs.com)). Debe contener:
- + Planteamiento del problema
- + Descripción de la metodología
- + Resultados
- + Bibliografía
-4. La entrega se hará a través de la plataforma Google Classroom del curso en el espacio correspondiente para ello.
+## ¿Qué se podría decir del efecto de la correlación entre variables y la estabilidad de los centroides en K-Medias?
+
+Por la existencia de la correlación y covarianza entre las variables de las distribuciones, el k-means no logra diferenciar correctamente los grupos. Además, con el ingreso de las últimas variables, se evidencian valores lejanos que halan los centrodies de los clusters en dicha dirección, afectando su diferenciación.
+
+
+### Bibliografía
+Geeksforgeeks. (2021). Elbow Method for optimal value of k in KMeans. https://www.geeksforgeeks.org/elbow-method-for-optimal-value-of-k-in-kmeans/
+MamutCola. (n.d.).
+Introducción a las técnicas multivariantes de clasificación. http://ares.inf.um.es/00Rteam/pub/mamutCola/modulo6.html
+RPUBS. (2019).Matrices, Vectores y Escalares. https://rpubs.com/cete/fundamentosr3
+Sitiobigdata. (2019). Covarianza y correlación: comprendiendo su utilidad. https://sitiobigdata.com/2019/10/26/covarianza-y-correlacion/# SOLIN. (2017).
+MEDIA VARIANZA COVARIANZA REGRESIÓN LINEAL. http://www.solin.16mb.com/estadistica_js/VarianzaCovarianzaRegresion.htm
+stat.ethz. (n.d.). Correlation, Variance and Covariance (Matrices). https://stat.ethz.ch/R-manual/R-devel/library/stats/html/cor.html
+UNIOVIEDO. (n.d.). El algoritmo k-means aplicado a clasificación y procesamiento de imágenes. https://www.unioviedo.es/compnum/laboratorios_py/kmeans/kmeans.html
+Wikipedia. (n.d.). Matriz de covarianza. https://es.wikipedia.org/wiki/Matriz_de_covarianza (UNIOVIEDO, n.d.)(Geeksforgeeks, 2021)
+El algoritmo k-means aplicado a clasificación y procesamiento de imágenes https://www.unioviedo.es/compnum/laboratorios_py/kmeans/kmeans.html 
+Elbow Method for optimal value of k in KMeans https://www.geeksforgeeks.org/elbow-method-for-optimal-value-of-k-in-kmeans/
 
 
